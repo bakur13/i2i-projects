@@ -1,0 +1,69 @@
+//the firdt we will do with golang 
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/hazelcast/hazelcast-go-client"
+)
+
+func main() {
+	hz, _ := hazelcast.NewClient()
+	mapObj, _ := hz.GetMap("map")
+
+	rand.Seed(time.Now().UnixNano())
+	numberCount := 20000
+
+	startTime := time.Now()
+	for i := 0; i < numberCount; i++ {
+		number := rand.Int()
+		mapObj.Put(i, number)
+	}
+	endTime := time.Now()
+	fmt.Printf("Time to put %d numbers into Hazelcast map: %v\n", numberCount, endTime.Sub(startTime))
+
+	startTime = time.Now()
+	for i := 0; i < numberCount; i++ {
+		mapObj.Get(i)
+	}
+	endTime = time.Now()
+	fmt.Printf("Time to retrieve %d numbers from Hazelcast map: %v\n", numberCount, endTime.Sub(startTime))
+}
+
+
+//the second we will do same example with java
+
+import java.util.Map;
+import java.util.Random;
+import java.time.Instant;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+
+public class HazelcastPerformanceMeasurement {
+  public static void main(String[] args) {
+    HazelcastInstance hz = Hazelcast.newHazelcastInstance();
+    Map<Integer, Integer> dataMap = hz.getMap("randomData");
+
+    Random random = new Random();
+    int numberCount = 200000;
+
+    // Measure time to put numbers into Hazelcast map
+    long startTime = Instant.now().toEpochMilli();
+    for (int i = 0; i < numberCount; i++) {
+      int number = random.nextInt();
+      dataMap.put(i, number);
+    }
+    long endTime = Instant.now().toEpochMilli();
+    System.out.println("Time to put " + numberCount + " numbers into Hazelcast map: " + (endTime - startTime) + " milliseconds");
+
+    // Measure time to retrieve numbers from Hazelcast map
+    startTime = Instant.now().toEpochMilli();
+    for (int i = 0; i < numberCount; i++) {
+      int number = dataMap.get(i);
+    }
+    endTime = Instant.now().toEpochMilli();
+    System.out.println("Time to retrieve " + numberCount + " numbers from Hazelcast map: " + (endTime - startTime) + " milliseconds");
+  }
+}
